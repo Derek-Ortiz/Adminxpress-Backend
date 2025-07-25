@@ -7,14 +7,14 @@ public class Negocio {
     private String nombre;
 
     public Negocio() {
-        // Constructor vacío
+        
     }
 
     public Negocio(String nombre) {
         this.nombre = nombre;
     }
 
-    // Getters
+  
     public int getId() {
         return id;
     }
@@ -23,7 +23,7 @@ public class Negocio {
         return nombre;
     }
 
-    // Setters
+  
     public void setId(int id) {
         this.id = id;
     }
@@ -32,7 +32,7 @@ public class Negocio {
         this.nombre = nombre;
     }
 
-    // toString
+   
     @Override
     public String toString() {
         return "Negocio{" +
@@ -41,7 +41,6 @@ public class Negocio {
                 '}';
     }
 
-    // equals
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,7 +49,6 @@ public class Negocio {
         return id == negocio.id && Objects.equals(nombre, negocio.nombre);
     }
 
-    // hashCode
     @Override
     public int hashCode() {
         return Objects.hash(id, nombre);

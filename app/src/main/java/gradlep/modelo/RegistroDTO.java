@@ -5,7 +5,7 @@ public class RegistroDTO {
     private String username;
     private String password;
 
-    // Constructor vacío obligatorio para Javalin
+    
     public RegistroDTO() {}
 
     public String getCompany() {

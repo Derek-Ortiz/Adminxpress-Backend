@@ -5,7 +5,6 @@ import gradlep.modelo.DetalleOrden;
 import gradlep.modelo.Insumo;
 import gradlep.modelo.Negocio;
 import gradlep.modelo.Producto;
-//import gradlep.servicios.ServicioStockInsumos;
 
 import java.sql.*;
 import java.time.LocalDateTime;

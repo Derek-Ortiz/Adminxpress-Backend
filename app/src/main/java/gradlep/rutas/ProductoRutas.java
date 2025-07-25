@@ -2,7 +2,7 @@ package gradlep.rutas;
 
 import gradlep.controlador.ControladorProducto;
 import io.javalin.Javalin;
-import io.javalin.apibuilder.ApiBuilder;
+
 
 public class ProductoRutas {
     
@@ -33,11 +33,7 @@ public class ProductoRutas {
 
         }
 }
-        /*app.get("/api/negocio/{id_negocio}/productos/{id}/insumos", controladorProducto::listarInsumosProducto);
-        app.post("/api/negocio/{id_negocio}/productos/{id}/insumos", controladorProducto::agregarInsumosProducto);
-        app.put("/api/negocio/{id_negocio}/productos/{id}/insumos/{id}", controladorProducto::editarInsumosProducto);
-        app.delete("/api/negocio/{id_negocio}/productos/{id}/insumos/{id}", controladorProducto::borrarInsumosProducto);
-        */
+        
         
 
 

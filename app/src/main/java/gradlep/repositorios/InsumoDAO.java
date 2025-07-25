@@ -46,13 +46,13 @@ public class InsumoDAO {
         PreparedStatement stmtInsumo = conexion.prepareStatement(sqlInsumo, Statement.RETURN_GENERATED_KEYS);
         PreparedStatement stmtStock = conexion.prepareStatement(sqlStock)
     ) {
-        // Desactivar auto-commit para manejar la transacción
+        
         conexion.setAutoCommit(false);
 
         // Insertar en insumos
         stmtInsumo.setString(1, insumo.getNombre());
         stmtInsumo.setString(2, insumo.getUnidad());
-        stmtInsumo.setDouble(3, insumo.getMinStock()); // Suponiendo método getMinStock
+        stmtInsumo.setDouble(3, insumo.getMinStock()); 
         stmtInsumo.setString(4, insumo.getEstado());
         stmtInsumo.setInt(5, insumo.getIdNegocio());
         stmtInsumo.executeUpdate();
@@ -62,8 +62,6 @@ public class InsumoDAO {
                 int idInsumo = generatedKeys.getInt(1);
                 insumo.setId(idInsumo);
 
-                // Insertar en stock_insumo
-                 // java.sql.Date
                 stmtStock.setInt(1, insumo.getStock());
                 if (insumo.getCaducidad() != null && !insumo.getCaducidad().isEmpty()) {
                     stmtStock.setDate(2, Date.valueOf(insumo.getCaducidad()));
@@ -79,15 +77,14 @@ public class InsumoDAO {
             }
         }
 
-        // Confirmar la transacción
         conexion.commit();
 
     } catch (SQLException e) {
-        // Si ocurre un error, revertimos los cambios
+
         conexion.rollback();
         throw e;
     } finally {
-        // Asegúrate de volver a activar el auto-commit
+
         conexion.setAutoCommit(true);
     }
 }
@@ -164,10 +161,10 @@ public class InsumoDAO {
         PreparedStatement stmtInsumo = conexion.prepareStatement(sqlInsumo);
         PreparedStatement stmtStock = conexion.prepareStatement(sqlStock)
     ) {
-        // Desactivar auto-commit para manejar la transacción
+      
         conexion.setAutoCommit(false);
 
-        // Actualizar tabla insumos
+       
         stmtInsumo.setString(1, insumo.getNombre());
         stmtInsumo.setString(2, insumo.getUnidad());
         stmtInsumo.setDouble(3, insumo.getMinStock());
@@ -175,27 +172,27 @@ public class InsumoDAO {
         stmtInsumo.setInt(5, insumo.getId());
         stmtInsumo.executeUpdate();
 
-        // Actualizar tabla stock
+       
         stmtStock.setInt(1, insumo.getStock());
         stmtStock.setString(2, insumo.getCaducidad());
         stmtStock.setDouble(3, insumo.getPrecio());
         stmtStock.setInt(4, insumo.getId());
         stmtStock.executeUpdate();
 
-        // Confirmar la transacción
+       
         conexion.commit();
 
     } catch (SQLException e) {
-        // Si ocurre un error, revertimos los cambios
+       
         conexion.rollback();
         throw e;
     } finally {
-        // Asegúrate de volver a activar el auto-commit
+        
         conexion.setAutoCommit(true);
     }
 }
 
-// Nuevo método para obtener información de stock
+
 public Map<String, Object> obtenerInfoStock(int idInsumo) throws SQLException {
     String sql = "SELECT precio_compra, caducidad FROM insumos_stock WHERE codigo_insumo = ? LIMIT 1";
     try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -262,7 +259,7 @@ public void registrarMovimientoStock(int idInsumo, float stock, float precio, St
 }
 
 public void actualizarStockTotal(int idInsumo) throws SQLException {
-    // Calcular el stock total sumando todos los movimientos
+    
     String sqlSuma = "SELECT SUM(stock) as total FROM insumos_stock WHERE codigo_insumo = ?";
     float stockTotal = 0;
     
@@ -274,12 +271,6 @@ public void actualizarStockTotal(int idInsumo) throws SQLException {
         }
     }
     
-}
-
-private String calcularEstado(float stock) {
-    if (stock <= 0) return "Sin stock";
-    if (stock <= 5) return "Bajo stock";
-    return "Ok";
 }
 
 

@@ -68,9 +68,9 @@ public class UsuarioDAO {
     public void agregarAdmi(Usuario usuario, Negocio negocio) throws SQLException {
     boolean originalAutoCommit = conexion.getAutoCommit();
     try {
-        conexion.setAutoCommit(false); // Iniciar transacción
+        conexion.setAutoCommit(false);
 
-        // 1. Insertar negocio y obtener ID
+        
         String sqlNegocio = "INSERT INTO negocio (nombre) VALUES (?)";
         try (PreparedStatement stmtNegocio = conexion.prepareStatement(
                 sqlNegocio, Statement.RETURN_GENERATED_KEYS)) {
@@ -82,13 +82,12 @@ public class UsuarioDAO {
                 throw new SQLException("No se pudo insertar el negocio");
             }
 
-            // Obtener el ID generado
             try (ResultSet generatedKeys = stmtNegocio.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int nuevoIdNegocio = generatedKeys.getInt(1);
                     System.out.println("ID de negocio generado: " + nuevoIdNegocio);
                     
-                    // 2. Insertar usuario con el nuevo ID - CORRECCIÓN AQUÍ
+                  
                     String sqlUsuario = "INSERT INTO usuarios (usuario, nombre, apellido_p, apellido_m, curp, cargo, contrasenia, codigo_negocio) "
                                      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement stmtUsuario = conexion.prepareStatement(sqlUsuario)) {

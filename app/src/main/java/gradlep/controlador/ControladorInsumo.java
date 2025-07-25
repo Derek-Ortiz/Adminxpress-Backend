@@ -33,7 +33,7 @@ public class ControladorInsumo {
         int idNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
         List<Insumo> insumos = insumoDAO.listarPorNegocio(idNegocio);
         
-        // Obtener información adicional de stock para cada insumo
+       
         for (Insumo insumo : insumos) {
             double stock = insumoDAO.obtenerStock(insumo.getId());
             insumo.setStock((int) stock);
@@ -148,14 +148,13 @@ public class ControladorInsumo {
 
 public void registrarMovimientoStock(Context ctx) {
     try {
-        // Validar IDs
+        
         int idNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
         int idInsumo = Integer.parseInt(ctx.pathParam("id"));
         
-        // Parsear datos del movimiento
         Map<String, Object> movimiento = ctx.bodyAsClass(Map.class);
         
-        // Validar campos requeridos
+       
         if (!movimiento.containsKey("stock") || !movimiento.containsKey("precio")) {
             ctx.status(400).json(Map.of("error", "Faltan campos requeridos (stock, precio)"));
             return;
@@ -165,10 +164,9 @@ public void registrarMovimientoStock(Context ctx) {
         float precio = Float.parseFloat(movimiento.get("precio").toString());
         String caducidad = movimiento.containsKey("caducidad") ? movimiento.get("caducidad").toString() : null;
         
-        // Registrar movimiento
+       
         insumoDAO.registrarMovimientoStock(idInsumo, stock, precio, caducidad);
-        
-        // Actualizar stock total
+    
         insumoDAO.actualizarStockTotal(idInsumo);
         
         ctx.status(201).json(Map.of("message", "Movimiento registrado"));

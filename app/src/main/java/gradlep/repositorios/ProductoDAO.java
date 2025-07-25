@@ -17,7 +17,7 @@ public class ProductoDAO {
 
     public void agregarProducto(Producto producto) throws SQLException {
     try {
-        // ✅ CORRECCIÓN: Incluir el campo imagen
+       
         String sql = "INSERT INTO productos(nombre, descripcion, costo_produccion, precio_actual, tipo, codigo_negocio, imagen) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement stmt = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -27,20 +27,20 @@ public class ProductoDAO {
             stmt.setDouble(4, producto.getPrecioActual());
             stmt.setString(5, producto.getTipo());
             stmt.setInt(6, producto.getCodigoNegocio());
-            stmt.setString(7, producto.getImagen()); // ✅ Agregar este parámetro
+            stmt.setString(7, producto.getImagen());
 
             int filasAfectadas = stmt.executeUpdate();
-            System.out.println("📊 Filas insertadas: " + filasAfectadas);
+            System.out.println("Filas insertadas: " + filasAfectadas);
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     producto.setId(generatedKeys.getInt(1));
-                    System.out.println("🆔 ID generado: " + producto.getId());
+                    System.out.println("ID: " + producto.getId());
                 }
             }
         }
     } catch (SQLException e) {
-        System.err.println("❌ Error SQL: " + e.getMessage());
+        System.err.println("Error SQL: " + e.getMessage());
         conexion.rollback();
         throw e;
     } finally {
@@ -195,7 +195,7 @@ public List<Insumo> listarInsumosBasicos(int idNegocio) throws SQLException {
                 rs.getDouble("costo_produccion"),
                 rs.getDouble("precio_actual"),
                 rs.getString("tipo"),
-                idNegocio, // ✅ Usar el idNegocio pasado como parámetro
+                idNegocio, 
                 rs.getString("imagen"),
                 rs.getInt("total") 
             );

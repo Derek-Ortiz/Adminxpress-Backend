@@ -15,7 +15,7 @@ public class App {
             return;
         }
 
-        // CORRECCIÓN: La configuración va dentro de create()
+        
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add(staticFiles -> {
             staticFiles.hostedPath = "/uploads";
@@ -24,18 +24,18 @@ public class App {
     });
         }).start("0.0.0.0",7000);
 
-        // Configurar CORS manualmente para todas las peticiones
+        
         app.before(ctx -> {
             ctx.header("Access-Control-Allow-Origin", "*");
             ctx.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             ctx.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-            ctx.header("Access-Control-Max-Age", "86400"); // 24 horas
+            ctx.header("Access-Control-Max-Age", "86400"); 
 
-            // Log para debug
+           
             System.out.println("📡 Petición recibida: " + ctx.method() + " " + ctx.path());
         });
 
-        // Manejar peticiones OPTIONS (preflight CORS)
+        
         app.options("/*", ctx -> {
             System.out.println("🔍 Petición OPTIONS recibida para: " + ctx.path());
             ctx.status(200);

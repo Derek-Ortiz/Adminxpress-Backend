@@ -5,20 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Orden {
-    private int id; // Campo unificado para ID
+    private int id; 
     private int idUsuarioRealiza;
-    private int idUsuarioCV; // También conocido como idCajero
+    private int idUsuarioCV; 
     private boolean estado;
     private double total;
     private int idNegocio;
-    private Timestamp fecha; // Para manejar fechas
+    private Timestamp fecha; 
     private List<DetalleOrden> detalles;
     private String nombreCajero;
      private Negocio negocio;
 
     public Orden() {
         this.detalles = new ArrayList<>();
-        this.estado = true; // Por defecto, nueva orden activa
+        this.estado = true; 
     }
 
     public void agregarDetalle(DetalleOrden detalle) {
@@ -37,7 +37,7 @@ public class Orden {
         return detalles.stream().mapToDouble(DetalleOrden::getSubtotal).sum();
     }
 
-    // Getters y setters
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -47,7 +47,7 @@ public class Orden {
     public int getIdUsuarioCV() { return idUsuarioCV; }
     public void setIdUsuarioCV(int idUsuarioCV) { this.idUsuarioCV = idUsuarioCV; }
     
-    // Alias para idUsuarioCV (para compatibilidad)
+    
     public int getIdCajero() { return idUsuarioCV; }
     public void setIdCajero(int idCajero) { this.idUsuarioCV = idCajero; }
 

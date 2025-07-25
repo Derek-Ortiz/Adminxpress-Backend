@@ -1,12 +1,12 @@
 package gradlep.modelo;
 
 public class DetalleOrden {
-    private int codigoProducto; // Solo necesitamos el ID del producto
-    private double precioVenta;  // Precio al momento de la venta
+    private int codigoProducto; 
+    private double precioVenta;
     private int cantidad;
-    private Producto producto; // Para cuando necesitemos cargar el producto completo
+    private Producto producto; 
 
-    public DetalleOrden() {} // Constructor vacío para Jackson
+    public DetalleOrden() {} 
 
     public DetalleOrden(int codigoProducto, double precioVenta, int cantidad) {
         this.codigoProducto = codigoProducto;

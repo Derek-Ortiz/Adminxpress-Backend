@@ -5,7 +5,6 @@ import io.javalin.http.HttpStatus;
 import gradlep.modelo.Producto;
 import gradlep.repositorios.OrdenDAO;
 import gradlep.repositorios.ProductoDAO;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;

@@ -14,7 +14,7 @@ public class InsumoDTO {
         this.cantidadUsar = cantidadUsar;
     }
 
-    // Getters (los setters solo si son necesarios)
+    
     public int getIdInsumo() { return idInsumo; }
     public String getNombre() { return nombre; }
     public String getUnidadMedida() { return unidadMedida; }

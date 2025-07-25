@@ -13,7 +13,6 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 
-import gradlep.modelo.DetalleOrden;
 import gradlep.modelo.Producto;
 
 import java.awt.image.BufferedImage;
