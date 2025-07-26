@@ -32,12 +32,12 @@ public class App {
             ctx.header("Access-Control-Max-Age", "86400"); 
 
            
-            System.out.println("📡 Petición recibida: " + ctx.method() + " " + ctx.path());
+            System.out.println("Petición recibida: " + ctx.method() + " " + ctx.path());
         });
 
         
         app.options("/*", ctx -> {
-            System.out.println("🔍 Petición OPTIONS recibida para: " + ctx.path());
+            System.out.println(" Petición OPTIONS recibida para: " + ctx.path());
             ctx.status(200);
         });
 
@@ -50,9 +50,9 @@ public class App {
 
         AppModule.registrarRutas(app, conn);
 
-        System.out.println("🚀 Servidor iniciado en http://localhost:7000");
-        System.out.println("🌐 Prueba: http://localhost:7000/");
-        System.out.println("🧪 Test CORS: http://localhost:7000/test");
-        System.out.println("📁 Archivos estáticos disponibles en: http://localhost:7000/uploads/");
+        System.out.println(" Servidor iniciado en http://localhost:7000");
+        System.out.println(" Prueba: http://localhost:7000/");
+        System.out.println(" Test CORS: http://localhost:7000/test");
+        System.out.println("Archivos estáticos en: http://localhost:7000/uploads/");
     }
 }
