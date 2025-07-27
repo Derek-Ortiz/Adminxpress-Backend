@@ -38,7 +38,7 @@ jobs:
           sudo mkdir -p /opt/apps/backend/
           sudo chmod -R 755 /opt/apps/backend/
 
-    - name: Copiar archivo JAR a EC2
+    - name: Copiar archivo JAR a EC2 (sin tar)
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -46,8 +46,9 @@ jobs:
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
-        timeout: "300s"
-        command_timeout: "600s"
+        rm: false
+        strip_components: 0
+        overwrite: true
         debug: true
 
     - name: Verificar archivo JAR en EC2
@@ -56,7 +57,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script:  ls -lh /opt/apps/backend/app-1.0-SNAPSHOT-all.jar
+        script: ls -lh /opt/apps/backend/app-1.0-SNAPSHOT-all.jar
 
     - name: Ejecutar pre-deploy en EC2
       uses: appleboy/ssh-action@v1.0.0
@@ -64,7 +65,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: sudo /opt/apps/backend/scripts/pre-deploy
+        script: sudo bash /opt/apps/backend/scripts/pre-deploy
 
     - name: Ejecutar post-deploy en EC2
       uses: appleboy/ssh-action@v1.0.0
@@ -72,4 +73,4 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: sudo /opt/apps/backend/scripts/post-deploy
+        script: sudo bash /opt/apps/backend/scripts/post-deploy
