@@ -31,8 +31,8 @@ jobs:
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
-        timeout: 300
-        command_timeout: 600
+        timeout: 300s
+        command_timeout: 600s
         debug: true
 
     - name: Ejecutar pre-deploy en EC2
