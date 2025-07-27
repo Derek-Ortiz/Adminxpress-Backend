@@ -35,10 +35,10 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: |
-          sudo mkdir -p /opt/apps/backend/
+          sudo mkdir -p /opt/apps/backend/scripts
           sudo chmod -R 755 /opt/apps/backend/
 
-    - name: Copiar archivo JAR a EC2 (sin estructura de carpetas)
+    - name: Copiar archivo JAR a EC2
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -49,6 +49,27 @@ jobs:
         strip_components: 3
         overwrite: true
         debug: true
+
+    - name: Copiar scripts de despliegue a EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        source: "deploy-scripts/"
+        target: "/opt/apps/backend/scripts/"
+        overwrite: true
+        debug: true
+
+    - name: Dar permisos de ejecución a los scripts en EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        script: |
+          sudo chmod +x /opt/apps/backend/scripts/pre-deploy
+          sudo chmod +x /opt/apps/backend/scripts/post-deploy
 
     - name: Verificar archivo JAR en EC2
       uses: appleboy/ssh-action@v1.0.0
