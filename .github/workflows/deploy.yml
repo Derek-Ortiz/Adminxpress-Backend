@@ -1,0 +1,43 @@
+name: Despliegue a EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repositorio
+      uses: actions/checkout@v3
+
+    - name: Construir el proyecto
+      run: ./gradlew clean build
+
+    - name: Copiar archivo JAR a EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: root
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
+        target: "/opt/apps/backend/"
+
+    - name: Ejecutar pre-deploy en EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: root
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: sudo /opt/apps/backend/scripts/pre-deploy
+
+    - name: Ejecutar post-deploy en EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: root
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: sudo /opt/apps/backend/scripts/post-deploy
