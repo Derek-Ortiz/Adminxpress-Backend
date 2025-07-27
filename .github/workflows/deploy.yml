@@ -35,8 +35,8 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: |
-          mkdir -p /opt/apps/backend/
-          chmod -R 755 /opt/apps/backend/
+          sudo mkdir -p /opt/apps/backend/
+          sudo chmod -R 755 /opt/apps/backend/
 
     - name: Copiar archivo JAR a EC2
       uses: appleboy/scp-action@v0.1.7
@@ -56,7 +56,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: ls -lh /opt/apps/backend/app-1.0-SNAPSHOT-all.jar
+        script:  ls -lh /opt/apps/backend/app-1.0-SNAPSHOT-all.jar
 
     - name: Ejecutar pre-deploy en EC2
       uses: appleboy/ssh-action@v1.0.0
