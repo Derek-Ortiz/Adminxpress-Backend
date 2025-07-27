@@ -38,7 +38,7 @@ jobs:
           sudo mkdir -p /opt/apps/backend/
           sudo chmod -R 755 /opt/apps/backend/
 
-    - name: Copiar archivo JAR a EC2 (sin tar)
+    - name: Copiar archivo JAR a EC2 (sin estructura de carpetas)
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -46,8 +46,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
-        rm: false
-        strip_components: 0
+        strip_components: 3
         overwrite: true
         debug: true
 
@@ -65,7 +64,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: sudo bash /opt/apps/backend/scripts/pre-deploy
+        script: sudo /opt/apps/backend/scripts/pre-deploy
 
     - name: Ejecutar post-deploy en EC2
       uses: appleboy/ssh-action@v1.0.0
@@ -73,4 +72,4 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: sudo bash /opt/apps/backend/scripts/post-deploy
+        script: sudo /opt/apps/backend/scripts/post-deploy
