@@ -14,6 +14,9 @@ jobs:
     - name: Clonar repositorio
       uses: actions/checkout@v3
 
+    - name: Dar permisos a gradlew
+      run: chmod +x gradlew
+
     - name: Construir el proyecto
       run: ./gradlew clean build
 
