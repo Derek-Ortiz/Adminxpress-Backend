@@ -46,7 +46,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
-        strip_components: 3
+        rm: true
         overwrite: true
         debug: true
 
