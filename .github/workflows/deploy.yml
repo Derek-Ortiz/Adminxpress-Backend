@@ -22,21 +22,25 @@ jobs:
 
     - name: Verificar existencia del JAR
       run: |
+        echo "Verificando JAR generado localmente..."
         if [ ! -f app/build/libs/app-1.0-SNAPSHOT-all.jar ]; then
           echo "❌ El archivo JAR no fue generado"
           exit 1
         fi
         ls -lh app/build/libs/app-1.0-SNAPSHOT-all.jar
 
-    - name: Crear carpeta destino en EC2 si no existe
+    - name: Crear carpetas destino en EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: |
+          echo "Creando estructura de carpetas en EC2..."
           sudo mkdir -p /opt/apps/backend/scripts
           sudo chmod -R 755 /opt/apps/backend/
+          echo "Estructura creada:"
+          ls -lh /opt/apps/backend/
 
     - name: Copiar archivo JAR a EC2
       uses: appleboy/scp-action@v0.1.7
@@ -49,6 +53,16 @@ jobs:
         strip_components: 3
         overwrite: true
         debug: true
+
+    - name: Verificar archivo JAR copiado en EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        script: |
+          echo "Verificando archivo JAR en EC2:"
+          ls -lh /opt/apps/backend/
 
     - name: Copiar scripts de despliegue a EC2
       uses: appleboy/scp-action@v0.1.7
@@ -68,16 +82,10 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: |
+          echo "Asignando permisos a scripts..."
           sudo chmod +x /opt/apps/backend/scripts/pre-deploy
           sudo chmod +x /opt/apps/backend/scripts/post-deploy
-
-    - name: Verificar archivo JAR en EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: ls -lh /opt/apps/backend/app-1.0-SNAPSHOT-all.jar
+          ls -lh /opt/apps/backend/scripts/
 
     - name: Ejecutar pre-deploy en EC2
       uses: appleboy/ssh-action@v1.0.0
@@ -85,7 +93,43 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: sudo /opt/apps/backend/scripts/pre-deploy
+        script: |
+          echo "Ejecutando script pre-deploy..."
+          sudo /opt/apps/backend/scripts/pre-deploy
+          echo "Contenido en backend después de pre-deploy:"
+          ls -lh /opt/apps/backend/
+
+    - name: Copiar JAR nuevamente por seguridad (post pre-deploy)
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
+        target: "/opt/apps/backend/"
+        strip_components: 3
+        overwrite: true
+        debug: true
+
+    - name: Verificar JAR final antes del post-deploy
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        script: |
+          echo "Confirmando existencia del JAR antes del post-deploy..."
+          ls -lh /opt/apps/backend/
+
+    - name: Esperar antes de ejecutar post-deploy
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        script: |
+          echo "Esperando 5 segundos para asegurar sincronización..."
+          sleep 5
 
     - name: Ejecutar post-deploy en EC2
       uses: appleboy/ssh-action@v1.0.0
@@ -93,4 +137,6 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: sudo /opt/apps/backend/scripts/post-deploy
+        script: |
+          echo "Iniciando aplicación con post-deploy..."
+          sudo /opt/apps/backend/scripts/post-deploy
