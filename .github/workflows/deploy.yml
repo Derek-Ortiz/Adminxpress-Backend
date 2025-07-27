@@ -32,7 +32,7 @@ jobs:
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: root
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: |
           mkdir -p /opt/apps/backend/
@@ -42,7 +42,7 @@ jobs:
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: root
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
@@ -54,7 +54,7 @@ jobs:
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: root
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: ls -lh /opt/apps/backend/app-1.0-SNAPSHOT-all.jar
 
@@ -62,7 +62,7 @@ jobs:
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: root
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: sudo /opt/apps/backend/scripts/pre-deploy
 
@@ -70,6 +70,6 @@ jobs:
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: root
+        username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         script: sudo /opt/apps/backend/scripts/post-deploy
