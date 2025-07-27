@@ -38,18 +38,16 @@ jobs:
           sudo mkdir -p /opt/apps/backend/
           sudo chmod -R 755 /opt/apps/backend/
 
-    - name: Copiar archivo JAR a EC2 (usando strip_components)
+    - name: Copiar archivo JAR a EC2 (sin estructura de carpetas)
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        # Cambiamos source para comprimir desde la carpeta 'app/build/libs' y así con strip_components: 3 solo quede el JAR
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
         strip_components: 3
         overwrite: true
-        rm: true
         debug: true
 
     - name: Verificar archivo JAR en EC2
