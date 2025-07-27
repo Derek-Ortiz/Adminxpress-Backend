@@ -21,7 +21,7 @@ jobs:
       run: ./gradlew clean build
 
     - name: Verificar tamaño del JAR
-      run: du -h app/build/libs/app-1.0-SNAPSHOT-all.jar
+      run: ls -lh app/build/libs/app-1.0-SNAPSHOT-all.jar
 
     - name: Copiar archivo JAR a EC2
       uses: appleboy/scp-action@v0.1.7
@@ -32,7 +32,7 @@ jobs:
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
         timeout: 300
-        command_timeout: 300
+        command_timeout: 600
         debug: true
 
     - name: Ejecutar pre-deploy en EC2
