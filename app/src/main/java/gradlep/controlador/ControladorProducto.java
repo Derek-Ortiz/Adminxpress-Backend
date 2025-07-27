@@ -57,7 +57,7 @@ public void agregarProducto(Context ctx) {
         System.out.println("- Imagen recibida: " + (imagen != null ? imagen.filename() + " (" + imagen.size() + " bytes)" : "null"));
         
         if (imagen != null) {
-            String carpetaImagenes = "app/src/main/java/gradlep/uploads/";
+            String carpetaImagenes = "/home/ubuntu/integrador-back2/app/src/main/java/gradlep/uploads/";
             Files.createDirectories(Paths.get(carpetaImagenes));
             String nombreArchivo = System.currentTimeMillis() + "_" + imagen.filename();
             Path rutaDestino = Paths.get(carpetaImagenes, nombreArchivo);
@@ -104,7 +104,7 @@ public void actualizarProducto(Context ctx) {
         if (imagen != null) {
     
             System.out.println("Imagen recibida: " + imagen.filename());
-            String carpetaImagenes = "app/src/main/java/gradlep/uploads/";
+            String carpetaImagenes = "/home/ubuntu/integrador-back2/app/src/main/java/gradlep/uploads/";
             Files.createDirectories(Paths.get(carpetaImagenes));
             String nombreArchivo = System.currentTimeMillis() + "_" + imagen.filename();
             Path rutaDestino = Paths.get(carpetaImagenes, nombreArchivo);
