@@ -20,8 +20,23 @@ jobs:
     - name: Construir el proyecto
       run: ./gradlew clean build
 
-    - name: Verificar tamaño del JAR
-      run: ls -lh app/build/libs/app-1.0-SNAPSHOT-all.jar
+    - name: Verificar existencia del JAR
+      run: |
+        if [ ! -f app/build/libs/app-1.0-SNAPSHOT-all.jar ]; then
+          echo "❌ El archivo JAR no fue generado"
+          exit 1
+        fi
+        ls -lh app/build/libs/app-1.0-SNAPSHOT-all.jar
+
+    - name: Crear carpeta destino en EC2 si no existe
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: root
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        script: |
+          mkdir -p /opt/apps/backend/
+          chmod -R 755 /opt/apps/backend/
 
     - name: Copiar archivo JAR a EC2
       uses: appleboy/scp-action@v0.1.7
@@ -31,9 +46,17 @@ jobs:
         key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
         target: "/opt/apps/backend/"
-        timeout: 300s
-        command_timeout: 600s
+        timeout: "300s"
+        command_timeout: "600s"
         debug: true
+
+    - name: Verificar archivo JAR en EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: root
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        script: ls -lh /opt/apps/backend/app-1.0-SNAPSHOT-all.jar
 
     - name: Ejecutar pre-deploy en EC2
       uses: appleboy/ssh-action@v1.0.0
