@@ -1,142 +1,118 @@
-name: Despliegue a EC2
+name: Deploy Java App to Amazon EC2
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Rama a desplegar'
+        required: true
+        default: 'main'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Clonar repositorio
-      uses: actions/checkout@v3
+      - name: Checkout código fuente
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
 
-    - name: Dar permisos a gradlew
-      run: chmod +x gradlew
+      - name: Configurar JDK 21 y cache Gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: '21'
+          cache: gradle
 
-    - name: Construir el proyecto
-      run: ./gradlew clean build
+      - name: Hacer ejecutable el wrapper de Gradle
+        run: chmod +x gradlew
 
-    - name: Verificar existencia del JAR
-      run: |
-        echo "Verificando JAR generado localmente..."
-        if [ ! -f app/build/libs/app-1.0-SNAPSHOT-all.jar ]; then
-          echo "El archivo JAR no fue generado"
-          exit 1
-        fi
-        ls -lh app/build/libs/app-1.0-SNAPSHOT-all.jar
+      - name: Construir con ShadowJar
+        run: ./gradlew clean shadowJar
 
-    - name: Crear carpetas destino en EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: |
-          echo "Creando estructura de carpetas en EC2..."
-          sudo mkdir -p /opt/apps/backend/scripts
-          sudo chmod -R 755 /opt/apps/backend/
-          echo "Estructura creada:"
-          ls -lh /opt/apps/backend/
+      - name: Buscar y mover el JAR a raíz
+        id: mover_jar
+        run: |
+          JAR_PATH=$(find app/build/libs -name "*-all.jar" | head -n 1)
+          if [ -z "$JAR_PATH" ]; then
+            echo "No se encontró un archivo JAR"
+            exit 1
+          fi
+          JAR_NAME=$(basename "$JAR_PATH")
+          mv "$JAR_PATH" "$JAR_NAME"
+          echo "Archivo JAR listo: $JAR_NAME"
+          echo "jar_name=$JAR_NAME" >> $GITHUB_OUTPUT
 
-    - name: Copiar archivo JAR a EC2
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
-        target: "/opt/apps/backend/"
-        strip_components: 3
-        overwrite: true
-        debug: true
+      - name: Crear estructura de carpetas en EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            sudo mkdir -p /opt/apps/backend/scripts
+            sudo chmod -R 755 /opt/apps/backend
 
-    - name: Verificar archivo JAR copiado en EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: |
-          echo "Verificando archivo JAR en EC2:"
-          ls -lh /opt/apps/backend/
+      - name: Copiar scripts de despliegue a EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          source: "deploy-scripts/"
+          target: "/opt/apps/backend/scripts/"
+          overwrite: true
 
-    - name: Copiar scripts de despliegue a EC2
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        source: "deploy-scripts/"
-        target: "/opt/apps/backend/scripts/"
-        overwrite: true
-        debug: true
+      - name: Asignar permisos a los scripts en EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            sudo chmod +x /opt/apps/backend/scripts/pre-deploy
+            sudo chmod +x /opt/apps/backend/scripts/post-deploy
 
-    - name: Dar permisos de ejecución a los scripts en EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: |
-          echo "Asignando permisos a scripts..."
-          sudo chmod +x /opt/apps/backend/scripts/pre-deploy
-          sudo chmod +x /opt/apps/backend/scripts/post-deploy
-          ls -lh /opt/apps/backend/scripts/
+      - name: Ejecutar script pre-deploy (detener app previa)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Ejecutando pre-deploy..."
+            sudo /opt/apps/backend/scripts/pre-deploy
 
-    - name: Ejecutar pre-deploy en EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: |
-          echo "Ejecutando script pre-deploy..."
-          sudo /opt/apps/backend/scripts/pre-deploy
-          echo "Contenido en backend después de pre-deploy:"
-          ls -lh /opt/apps/backend/
+      - name: Copiar JAR generado al servidor EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          source: "${{ steps.mover_jar.outputs.jar_name }}"
+          target: "/opt/apps/backend/"
+          overwrite: true
 
-    - name: Copiar JAR nuevamente por seguridad (post pre-deploy)
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        source: "app/build/libs/app-1.0-SNAPSHOT-all.jar"
-        target: "/opt/apps/backend/"
-        strip_components: 3
-        overwrite: true
-        debug: true
+      - name: Verificar JAR en EC2 (opcional)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Confirmando JAR en servidor:"
+            ls -lh /opt/apps/backend/
 
-    - name: Verificar JAR final antes del post-deploy
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: |
-          echo "Confirmando existencia del JAR antes del post-deploy..."
-          ls -lh /opt/apps/backend/
-
-    - name: Esperar antes de ejecutar post-deploy
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: |
-          echo "Esperando 5 segundos para asegurar sincronización..."
-          sleep 5
-
-    - name: Ejecutar post-deploy en EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-        script: |
-          echo "Iniciando aplicación con post-deploy..."
-          sudo /opt/apps/backend/scripts/post-deploy
+      - name: Ejecutar post-deploy (iniciar app con systemd)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Iniciando app con post-deploy..."
+            sudo /opt/apps/backend/scripts/post-deploy
