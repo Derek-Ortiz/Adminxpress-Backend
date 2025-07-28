@@ -51,7 +51,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             sudo mkdir -p /opt/apps/backend/scripts
@@ -61,7 +61,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: "deploy-scripts/"
           target: "/opt/apps/backend/scripts/"
@@ -71,7 +71,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             sudo chmod +x /opt/apps/backend/scripts/pre-deploy
@@ -81,7 +81,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             echo "Ejecutando pre-deploy..."
@@ -91,7 +91,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: "${{ steps.mover_jar.outputs.jar_name }}"
           target: "/opt/apps/backend/"
@@ -101,7 +101,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             echo "Confirmando JAR en servidor:"
@@ -111,7 +111,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             echo "Iniciando app con post-deploy..."
