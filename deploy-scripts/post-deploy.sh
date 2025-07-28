@@ -1,8 +1,7 @@
-#!/bin/bash
+
 
 echo "Iniciando aplicación..."
 
-# Obtener el nombre del JAR (puedes usarlo para imprimir o validar)
 JAR_NAME=$(ls /opt/apps/backend/app*.jar | head -n 1)
 
 if [ ! -f "$JAR_NAME" ]; then
@@ -24,7 +23,7 @@ if [ -f "/etc/systemd/system/myapp.service" ]; then
 
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
         echo "Verificando proceso (Intento $((RETRY_COUNT + 1)) de $MAX_RETRIES)..."
-        # Buscar proceso Java que ejecuta el jar (sin usar comodines literales)
+    
         pgrep -f "java -jar /opt/apps/backend/app" > /dev/null 2>&1
         if [ $? -eq 0 ]; then
             echo "Proceso encontrado."

@@ -1,4 +1,4 @@
-#!/bin/bash
+
 
 echo "Deteniendo la aplicación..."
 sudo pkill -f "java -jar /opt/apps/backend/app*.jar"

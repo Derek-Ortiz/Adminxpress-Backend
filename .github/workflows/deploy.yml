@@ -24,7 +24,7 @@ jobs:
       run: |
         echo "Verificando JAR generado localmente..."
         if [ ! -f app/build/libs/app-1.0-SNAPSHOT-all.jar ]; then
-          echo "❌ El archivo JAR no fue generado"
+          echo "El archivo JAR no fue generado"
           exit 1
         fi
         ls -lh app/build/libs/app-1.0-SNAPSHOT-all.jar
