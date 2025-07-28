@@ -44,38 +44,7 @@ jobs:
           fi
           JAR_NAME=$(basename "$JAR_PATH")
           mv "$JAR_PATH" "$JAR_NAME"
-          echo "Archivo JAR listo: $JAR_NAME"
           echo "jar_name=$JAR_NAME" >> $GITHUB_OUTPUT
-
-      - name: Crear estructura de carpetas en EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            sudo mkdir -p /opt/apps/backend/scripts
-            sudo chmod -R 755 /opt/apps/backend
-
-      - name: Copiar scripts de despliegue a EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "deploy-scripts/"
-          target: "/opt/apps/backend/scripts/"
-          overwrite: true
-
-      - name: Asignar permisos a los scripts en EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            sudo chmod +x /opt/apps/backend/scripts/pre-deploy
-            sudo chmod +x /opt/apps/backend/scripts/post-deploy
 
       - name: Ejecutar script pre-deploy (detener app previa)
         uses: appleboy/ssh-action@v1.0.3
@@ -83,12 +52,10 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            echo "Ejecutando pre-deploy..."
-            sudo /opt/apps/backend/scripts/pre-deploy
+          script: sudo /opt/apps/backend/scripts/pre-deploy
 
       - name: Copiar JAR generado al servidor EC2
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
@@ -97,22 +64,10 @@ jobs:
           target: "/opt/apps/backend/"
           overwrite: true
 
-      - name: Verificar JAR en EC2 (opcional)
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            echo "Confirmando JAR en servidor:"
-            ls -lh /opt/apps/backend/
-
       - name: Ejecutar post-deploy (iniciar app con systemd)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          script: |
-            echo "Iniciando app con post-deploy..."
-            sudo /opt/apps/backend/scripts/post-deploy
+          script: sudo /opt/apps/backend/scripts/post-deploy
