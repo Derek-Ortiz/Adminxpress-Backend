@@ -15,7 +15,6 @@ public class InsumoRutas {
 
         public void registro(Javalin app) {
     
-            //app.get("/api/insumos", controladorInsumo::listarInsumos);
             app.post("/api/negocio/{id_negocio}/insumos", controladorInsumo::agregarInsumo);
             app.get("/api/negocio/{id_negocio}/insumos/{id}", controladorInsumo::buscarInsumo);
             app.put("/api/negocio/{id_negocio}/insumos/{id}", controladorInsumo::actualizarInsumo);

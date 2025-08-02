@@ -18,7 +18,7 @@ public class App {
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add(staticFiles -> {
             staticFiles.hostedPath = "/uploads";
-            staticFiles.directory = "/home/ubuntu/integrador-back2/app/src/main/java/gradlep/uploads";
+            staticFiles.directory = "/home/ubuntu/integrador-back2/app/src/main/java/gradlep/uploads"; 
             staticFiles.location = Location.EXTERNAL;
     });
         }).start("0.0.0.0",7000);

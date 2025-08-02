@@ -4,11 +4,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class conexion {
-
+    
     private static final String URL = "jdbc:mariadb://13.223.132.126:3306/adminxpress";
     private static final String USER = "admindb2";
     private static final String PASSWORD = "D3r3k2oo6.@";
-    /*
+    /* 
     private static final String URL = "jdbc:mariadb://localhost:3306/Adminxpress";
     private static final String USER = "root";
     private static final String PASSWORD = null;

@@ -99,9 +99,14 @@ public void actualizarProducto(Context ctx) {
             Files.copy(imagen.content(), rutaDestino);
 
             producto.setImagen("uploads/" + nombreArchivo);
-        } else {
-            producto.setImagen(null);
+        }  else {
+            Producto productoActual = productoDAO.buscarPorId(id);
+            if (productoActual != null) {
+                producto.setImagen(productoActual.getImagen()); 
+                System.out.println("Imagen no actualizada, se mantiene la anterior: " + producto.getImagen());
+            }
         }
+
 
         productoDAO.editarProducto(producto);
         ctx.status(200).json(producto);

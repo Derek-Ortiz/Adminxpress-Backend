@@ -16,8 +16,6 @@ public class ProductoRutas {
 
         public void registro(Javalin app) {
 
-        //ruta para productos
-
         app.get("/api/negocio/{id_negocio}/productos", controladorProducto::listarProductosPorNegocio);
         app.get("/api/negocio/{id_negocio}/productosVentas", controladorProducto::listarProductosVentas);
         app.post("/api/negocio/{id_negocio}/productos", controladorProducto::agregarProducto);
