@@ -46,15 +46,12 @@ public class ExportarReporte {
         Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
         Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
 
-
         Paragraph title = new Paragraph("Reporte de Ventas", titleFont);
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
 
-
         document.add(new Paragraph("Rango de fechas: " + desde.toLocalDate() + " a " + hasta.toLocalDate(), normalFont));
         document.add(new Paragraph("\n"));
-
  
         PdfPTable resumen = new PdfPTable(2);
         resumen.setWidthPercentage(60);
@@ -71,9 +68,7 @@ public class ExportarReporte {
         resumen.addCell("$" + String.format("%.2f", utilidadNeta));
         document.add(resumen);
 
-
         document.add(new Paragraph("\n"));
-
 
         Paragraph grafTitle = new Paragraph("Comparación: Ventas vs Gastos", subTitleFont);
         grafTitle.setSpacingBefore(10);
@@ -83,7 +78,6 @@ public class ExportarReporte {
         chartImage.scaleToFit(400, 300);
         chartImage.setAlignment(Element.ALIGN_CENTER);
         document.add(chartImage);
-
 
         Paragraph topHeader = new Paragraph("Productos Más Vendidos", subTitleFont);
         topHeader.setSpacingBefore(15);
@@ -102,7 +96,6 @@ public class ExportarReporte {
         }
 
         document.add(tableMasVendidos);
-
 
         Paragraph lowHeader = new Paragraph("Productos Menos Vendidos", subTitleFont);
         lowHeader.setSpacingBefore(15);
@@ -126,14 +119,12 @@ public class ExportarReporte {
         return out.toByteArray();
     }
 
-
     private static byte[] generarGraficaComparativa(double ventas, double gastos) throws Exception {
 
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
     dataset.addValue(ventas, "Ventas", "");
     dataset.addValue(gastos, "Gastos", "");
     
-
     JFreeChart chart = ChartFactory.createBarChart(
         null,
         "Fechas",
@@ -145,31 +136,25 @@ public class ExportarReporte {
         false
     );
     
-
     chart.setBackgroundPaint(Color.WHITE);
-    
 
     CategoryPlot plot = chart.getCategoryPlot();
     plot.setBackgroundPaint(Color.WHITE);
     plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
-    
 
     BarRenderer renderer = (BarRenderer) plot.getRenderer();
     renderer.setSeriesPaint(0, new Color(84, 146, 116));
     renderer.setSeriesPaint(1, new Color(255, 99, 132)); 
     renderer.setDrawBarOutline(false);
     renderer.setShadowVisible(false);
-    
 
     NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
     rangeAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
     rangeAxis.setAutoRange(true);
     
-
     CategoryAxis domainAxis = plot.getDomainAxis();
     domainAxis.setCategoryMargin(0.2);
     
-
     BufferedImage bufferedImage = chart.createBufferedImage(500, 300, BufferedImage.TYPE_INT_RGB, null);
     ByteArrayOutputStream chartOut = new ByteArrayOutputStream();
     ImageIO.write(bufferedImage, "png", chartOut);

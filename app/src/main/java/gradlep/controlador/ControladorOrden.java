@@ -5,7 +5,6 @@ import gradlep.modelo.DetalleOrden;
 import gradlep.modelo.Orden;
 import gradlep.repositorios.OrdenDAO;
 import gradlep.servicios.ExportarTicket;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +19,7 @@ public class ControladorOrden {
     public void crearOrden(Context ctx) {
         try {
             int idNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
-         
             Orden orden = ctx.bodyAsClass(Orden.class);
-            
             orden.setIdNegocio(idNegocio);
          
             if (orden.getDetalles() == null || orden.getDetalles().isEmpty()) {
@@ -41,17 +38,13 @@ public class ControladorOrden {
             }
 
             orden.setTotal(orden.calcularTotal());
-            System.out.println("total" + orden.getTotal());
-   
             int idOrden = ordenDAO.guardarOrden(orden);
 
             if (idOrden != -1) {
 
                 if (orden.isEstado()) {
                     ordenDAO.reducirInsumosPorOrden(orden);
-                    System.out.println("entro a isEstado para reducir");
                 }
-
                 ctx.status(201).json(Map.of(
                     "idOrden", idOrden,
                     "total", orden.getTotal(),
@@ -113,11 +106,9 @@ public class ControladorOrden {
      
         int idNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
         int idPedido = Integer.parseInt(ctx.pathParam("id"));
-      
         Orden ordenExistente = ordenDAO.buscarOrdenPorIdYNegocio(idPedido, idNegocio);
         
         if (ordenExistente == null) {
-           
             ctx.status(404).json(Map.of(
                 "error", "Pedido no encontrado o no pertenece al negocio especificado"
             ));
@@ -125,15 +116,11 @@ public class ControladorOrden {
         }
 
         Orden ordenActualizada = ctx.bodyAsClass(Orden.class);
-        
-        System.out.println("Datos recibidos para actualización: " + ordenActualizada.toString());
-
         ordenActualizada.setId(idPedido);
         ordenActualizada.setIdNegocio(idNegocio);
         
         if (ordenActualizada.getDetalles() == null || ordenActualizada.getDetalles().isEmpty()) {
            
-            System.out.println("Error: La orden no tiene detalles");
             ctx.status(400).json(Map.of(
                 "error", "La orden debe contener al menos un detalle"
             ));
@@ -141,12 +128,7 @@ public class ControladorOrden {
         }
 
         boolean preciosValidos = ordenDAO.validarYActualizarPrecios(ordenActualizada);
-        
-        System.out.println("Precios válidos: " + preciosValidos);
-        
         if (!preciosValidos) {
-       
-            System.out.println("Error: Productos no existen o no disponibles");
             ctx.status(400).json(Map.of(
                 "error", "Algunos productos no existen o no están disponibles"
             ));
@@ -154,20 +136,11 @@ public class ControladorOrden {
         }
      
         boolean estadoAnterior = ordenExistente.isEstado();
-        
-        System.out.println("anterior: " + estadoAnterior + ", Nuevo: " + ordenActualizada.isEstado());
-
         double totalCalculado = ordenActualizada.calcularTotal();
         ordenActualizada.setTotal(totalCalculado);
-       
-        System.out.println("Total calculado: " + totalCalculado);
-
         boolean actualizado = ordenDAO.actualizarOrden(ordenActualizada);
-        
-        System.out.println("Orden actualizada en BD: " + actualizado);
 
-        if (actualizado) {
-           
+        if (actualizado) { 
             if (estadoAnterior != ordenActualizada.isEstado()) {
                 if (ordenActualizada.isEstado()) {
                     ordenDAO.reducirInsumosPorOrden(ordenActualizada);
@@ -181,33 +154,27 @@ public class ControladorOrden {
                 "mensaje", "Pedido actualizado exitosamente"
             ));
         } else {
-           
             ctx.status(400).json(Map.of(
                 "error", "No se pudo actualizar el pedido"
             ));
         }
         
     } catch (NumberFormatException e) {
-       
         ctx.status(400).json(Map.of(
             "error", "ID de negocio o pedido inválido"
         ));
     } catch (SQLException e) {
-     
         ctx.status(500).json(Map.of(
             "error", "Error de base de datos al actualizar pedido",
             "detalle", e.getMessage()
         ));
     } catch (Exception e) {
-      
         e.printStackTrace();
         ctx.status(400).json(Map.of(
             "error", "Error al procesar la solicitud",
             "detalle", e.getMessage()
         ));
-    } finally {
-        System.out.println("Finalizado proceso de actualización de pedido");
-    }
+    } 
 }
 
 public void cancelarPedido(Context ctx) {
@@ -215,11 +182,9 @@ public void cancelarPedido(Context ctx) {
      
         int idNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
         int idPedido = Integer.parseInt(ctx.pathParam("id"));
-        
         Orden ordenExistente = ordenDAO.buscarOrdenPorIdYNegocio(idPedido, idNegocio);
         
         if (ordenExistente == null) {
-           
             ctx.status(404).json(Map.of(
                 "error", "Pedido no encontrado o no pertenece al negocio especificado"
             ));
@@ -227,13 +192,10 @@ public void cancelarPedido(Context ctx) {
         }
         
         boolean cancelado = ordenDAO.cancelarOrden(idPedido, idNegocio);
-
-        if (cancelado) {
-            
+        if (cancelado) { 
             if (ordenExistente.isEstado()) {
                 ordenDAO.aumentarInsumosPorOrden(ordenExistente);
             }
-        
             ctx.status(200).json(Map.of(
                 "idOrden", idPedido,
                 "mensaje", "Pedido cancelado exitosamente"
@@ -245,12 +207,10 @@ public void cancelarPedido(Context ctx) {
         }
         
     } catch (NumberFormatException e) {
-        
         ctx.status(400).json(Map.of(
             "error", "ID de negocio o pedido inválido"
         ));
     } catch (SQLException e) {
-       
         e.printStackTrace();
         ctx.status(500).json(Map.of(
             "error", "Error de base de datos al cancelar pedido",
@@ -275,7 +235,6 @@ public void cancelarPedido(Context ctx) {
             double totalVentas = ventas.stream()
                 .mapToDouble(Orden::getTotal)
                 .sum();
-            
             ctx.status(200).json(Map.of(
                 "ventas", ventas,
                 "totalVentas", totalVentas,
@@ -302,7 +261,6 @@ public void cancelarPedido(Context ctx) {
 
     public void generarTicketPDF(Context ctx) {
     try {
-
         String idOrdenParam = ctx.pathParam("id");
         String idNegocioParam = ctx.pathParam("id_negocio");
         
@@ -347,9 +305,7 @@ public void cancelarPedido(Context ctx) {
            .result(pdf);
 
     } catch (Exception e) {
-        System.err.println("[ERROR] Al generar ticket: " + e.getMessage());
         e.printStackTrace();
-        
         ctx.status(500).json(Map.of(
             "status", "server_error",
             "message", "Error en el servidor",

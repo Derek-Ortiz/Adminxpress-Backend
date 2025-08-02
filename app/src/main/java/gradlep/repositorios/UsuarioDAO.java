@@ -60,7 +60,6 @@ public class UsuarioDAO {
             }
         }
     }
-
     return usuarios;
 }
 
@@ -69,7 +68,6 @@ public class UsuarioDAO {
     boolean originalAutoCommit = conexion.getAutoCommit();
     try {
         conexion.setAutoCommit(false);
-
         
         String sqlNegocio = "INSERT INTO negocio (nombre) VALUES (?)";
         try (PreparedStatement stmtNegocio = conexion.prepareStatement(
@@ -85,8 +83,6 @@ public class UsuarioDAO {
             try (ResultSet generatedKeys = stmtNegocio.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int nuevoIdNegocio = generatedKeys.getInt(1);
-                    System.out.println("ID de negocio generado: " + nuevoIdNegocio);
-                    
                   
                     String sqlUsuario = "INSERT INTO usuarios (usuario, nombre, apellido_p, apellido_m, curp, cargo, contrasenia, codigo_negocio) "
                                      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -97,11 +93,9 @@ public class UsuarioDAO {
                         stmtUsuario.setString(4, usuario.getApellidoMaterno());
                         stmtUsuario.setString(5, usuario.getCurp());
                         stmtUsuario.setString(6, usuario.getCargo());
-                        stmtUsuario.setString(7, usuario.getContrasena()); // El getter puede mantenerese como getContrasena()
+                        stmtUsuario.setString(7, usuario.getContrasena()); 
                         stmtUsuario.setInt(8, nuevoIdNegocio);
-                        
                         stmtUsuario.executeUpdate();
-                        System.out.println("Usuario insertado con código_negocio: " + nuevoIdNegocio);
                     }
                 } else {
                     throw new SQLException("No se obtuvo el ID generado para el negocio");
@@ -134,7 +128,6 @@ public class UsuarioDAO {
         }
     }
 
-
     public Usuario buscarAdmiPorUsuarioYContrasena(String usuario, String contrasena) throws SQLException {
     String sql = "SELECT * FROM usuarios WHERE usuario = ? AND contrasenia = ? AND cargo = 'administrador' ";
     try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -156,12 +149,8 @@ public class UsuarioDAO {
                 );  
             } else {
                 return null;
-
-            }
-            
-        }
-        
-        
+            }  
+        }     
     }
 }
 
@@ -186,16 +175,10 @@ public class UsuarioDAO {
                 );  
             } else {
                 return null;
-
-            }
-            
-        }
-        
-        
+            }  
+        }  
     }
 }
-
-
 
     public void editarUsuario(Usuario usuario) throws SQLException {
         String sql = "UPDATE usuarios SET usuario=?, nombre=?, apellido_p=?, apellido_m=?, curp=?, contrasenia=?, cargo=? WHERE id_usuario=?";

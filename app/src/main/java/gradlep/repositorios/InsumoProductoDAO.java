@@ -13,7 +13,6 @@ public class InsumoProductoDAO {
         this.conexion = conexion;
     }
 
-
     public List<InsumoProducto> obtenerInsumosPorProducto(int idProducto) throws SQLException {
         List<InsumoProducto> lista = new ArrayList<>();
         String sql = "SELECT * FROM insumos_productos WHERE codigo_producto = ?";
@@ -34,7 +33,6 @@ public class InsumoProductoDAO {
 
 
 public void agregarInsumoAProducto(InsumoProducto relacion, int codigoNegocio) throws SQLException {
-    // Validar que tanto el producto como el insumo pertenezcan al negocio
     String sqlValidacion = """
         SELECT 1 
         FROM productos p
@@ -53,8 +51,6 @@ public void agregarInsumoAProducto(InsumoProducto relacion, int codigoNegocio) t
             throw new SQLException("Producto o insumo no pertenecen al negocio");
         }
     }
-
-    // Si pasa la validación, insertar
     String sqlInsert = "INSERT INTO insumos_productos(codigo_producto, codigo_insumo, cantidad_usar) VALUES (?, ?, ?)";
     try (PreparedStatement stmt = conexion.prepareStatement(sqlInsert)) {
         stmt.setInt(1, relacion.getCodigoProducto());
@@ -73,8 +69,6 @@ public void agregarInsumoAProducto(InsumoProducto relacion, int codigoNegocio) t
         }
     }
     public Map<Insumo, Double> obtenerRecetaProducto(int idProducto, int codigoNegocio) throws SQLException {
-    System.out.println("[DEBUG] obtenerRecetaProducto - idProducto: " + idProducto + ", codigoNegocio: " + codigoNegocio);
-    
     String sql = """
         SELECT i.id_insumos, i.nom_producto, i.unidad_medida, i.min_stock, i.estado,
                ip.cantidad_usar, i.codigo_negocio  
@@ -89,9 +83,6 @@ public void agregarInsumoAProducto(InsumoProducto relacion, int codigoNegocio) t
         stmt.setInt(1, idProducto);
         stmt.setInt(2, codigoNegocio);
         
-        System.out.println("[DEBUG] Ejecutando consulta: " + sql);
-        System.out.println("[DEBUG] Parámetros: idProducto=" + idProducto + ", codigoNegocio=" + codigoNegocio);
-        
         ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
             Insumo ins = new Insumo(
@@ -105,11 +96,8 @@ public void agregarInsumoAProducto(InsumoProducto relacion, int codigoNegocio) t
             receta.put(ins, rs.getDouble("cantidad_usar"));
         }
     } catch (SQLException e) {
-        System.err.println("[ERROR SQL] en obtenerRecetaProducto: " + e.getMessage());
         throw e;
     }
-    
-    System.out.println("[DEBUG] Receta obtenida: " + receta.size() + " insumos");
     return receta;
 }
 
@@ -127,7 +115,7 @@ public void agregarInsumoAProducto(InsumoProducto relacion, int codigoNegocio) t
     
     try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
         stmt.setInt(1, idProducto);
-        stmt.setInt(2, codigoNegocio); // ← Parámetro añadido
+        stmt.setInt(2, codigoNegocio);
         ResultSet rs = stmt.executeQuery();
         
         while (rs.next()) {

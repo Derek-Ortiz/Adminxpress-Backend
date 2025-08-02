@@ -25,7 +25,6 @@ public class ControladorUsuario {
         String usuario = datos.get("usuario");
         String contrasena = datos.get("contrasena");
 
-        // Validación básica
         if (usuario == null || usuario.isEmpty() || contrasena == null || contrasena.isEmpty()) {
             ctx.status(400).json(Map.of(
                 "error", "Datos incompletos",
@@ -36,7 +35,6 @@ public class ControladorUsuario {
 
         Usuario usuarioEncontrado = usuarioDAO.buscarAdmiPorUsuarioYContrasena(usuario, contrasena);
         if (usuarioEncontrado != null) {
-            // No enviar la contraseña en la respuesta
             Map<String, Object> response = new HashMap<>();
             response.put("id_empleado", usuarioEncontrado.getId());
             response.put("usuario", usuarioEncontrado.getUsuario());
@@ -64,14 +62,12 @@ public class ControladorUsuario {
     }
 }
 
-
    public void loginCajero(Context ctx) {
     try {
         Map<String, String> datos = ctx.bodyAsClass(Map.class);
         String usuario = datos.get("usuario");
         String contrasena = datos.get("contrasena");
 
-        // Validación básica
         if (usuario == null || usuario.isEmpty() || contrasena == null || contrasena.isEmpty()) {
             ctx.status(400).json(Map.of(
                 "error", "Datos incompletos",
@@ -82,7 +78,6 @@ public class ControladorUsuario {
 
         Usuario usuarioEncontrado = usuarioDAO.buscarPorUsuarioYContrasena(usuario, contrasena);
         if (usuarioEncontrado != null) {
-            // No enviar la contraseña en la respuesta
             Map<String, Object> response = new HashMap<>();
             response.put("id_empleado", usuarioEncontrado.getId());
             response.put("usuario", usuarioEncontrado.getUsuario());
@@ -121,16 +116,15 @@ public class ControladorUsuario {
     }
 }
 
-
     public void listarUsuarios(Context ctx) {
     try {
-        String codigo = ctx.queryParam("codigo"); // ← viene del frontend
+        String codigo = ctx.queryParam("codigo"); 
         List<Usuario> usuarios;
 
         if (codigo != null) {
             usuarios = usuarioDAO.listarUsuariosPorNegocio(codigo);
         } else {
-            usuarios = usuarioDAO.listarUsuarios(); // todos
+            usuarios = usuarioDAO.listarUsuarios(); 
         }
 
         ctx.json(usuarios);
@@ -139,12 +133,9 @@ public class ControladorUsuario {
     }
 }
 
-
     public void registrarAdmi(Context ctx) {
     try {
         RegistroDTO registro = ctx.bodyAsClass(RegistroDTO.class);
-        
-        // Validaciones básicas
         if (registro.getCompany() == null || registro.getCompany().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de la empresa es requerido");
         }
@@ -152,10 +143,9 @@ public class ControladorUsuario {
             throw new IllegalArgumentException("Usuario y contraseña son requeridos");
         }
 
-        // Crear objetos del dominio
         Usuario usuario = new Usuario();
         usuario.setUsuario(registro.getUsername());
-        usuario.setNombre(registro.getUsername()); // O nombre real si está disponible
+        usuario.setNombre(registro.getUsername()); 
         usuario.setApellidoPaterno("");
         usuario.setApellidoMaterno("");
         usuario.setCurp("CURPDEPRUEBA123456");
@@ -166,7 +156,6 @@ public class ControladorUsuario {
         Negocio negocio = new Negocio();
         negocio.setNombre(registro.getCompany());
 
-        // Usar el DAO que ya tiene la conexión
         usuarioDAO.agregarAdmi(usuario, negocio);
         
         ctx.status(201).json(Map.of(
@@ -180,7 +169,6 @@ public class ControladorUsuario {
         ));
     }
 }
-
 
     public void registrarUsuario(Context ctx) {
         try {

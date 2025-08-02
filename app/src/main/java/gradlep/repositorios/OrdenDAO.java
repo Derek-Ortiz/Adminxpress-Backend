@@ -23,7 +23,6 @@ public class OrdenDAO {
     }
 
     public int guardarOrden(Orden orden) throws SQLException {
-        System.out.println("entro en guarda orden en bd");
         String sqlPedido = "INSERT INTO pedidos (total, estado, codigo_usuario_realizar, codigo_negocio) VALUES (?, ?, ?, ?)";
         
         try (PreparedStatement stmt = conexion.prepareStatement(sqlPedido, Statement.RETURN_GENERATED_KEYS)) {
@@ -49,7 +48,6 @@ public class OrdenDAO {
     }
 
     public boolean validarYActualizarPrecios(Orden orden) throws SQLException {
-        System.out.println("entro en actualizar precios");
         String sql = "SELECT id_producto, precio_actual FROM productos WHERE id_producto = ? AND codigo_negocio = ?";
         
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -70,7 +68,6 @@ public class OrdenDAO {
     }
 
     private void guardarDetallesOrden(int idPedido, List<DetalleOrden> detalles) throws SQLException {
-        System.out.println("entro en guardar detalles orden");
         String sqlDetalle = "INSERT INTO productos_pedidos (num_pedido, codigo_producto, precio_venta, cantidad) VALUES (?, ?, ?, ?)";
         
         try (PreparedStatement stmt = conexion.prepareStatement(sqlDetalle)) {
@@ -86,7 +83,6 @@ public class OrdenDAO {
         }
     }
 
-    // Listar pedidos por negocio
     public List<Orden> listarPedidosPorNegocio(int idNegocio) throws SQLException {
         String sql = """
             SELECT p.id_pedidos, p.total, p.fech_realizacion, p.codigo_usuario_realizar, p.estado,
@@ -141,13 +137,10 @@ public class OrdenDAO {
         }
     }
 
-    // Buscar orden por ID y negocio
     public Orden buscarOrdenPorIdYNegocio(int idOrden, int idNegocio) throws SQLException {
         String sql = """
-        SELECT p.id_pedidos, p.total, p.fech_realizacion, 
-           p.codigo_usuario_realizar, u.nombre AS nombre_cajero,
-           p.estado, p.codigo_negocio, n.nombre AS nombre_negocio
-        FROM pedidos p
+        SELECT p.id_pedidos, p.total, p.fech_realizacion, p.codigo_usuario_realizar, u.nombre AS nombre_cajero,
+        p.estado, p.codigo_negocio, n.nombre AS nombre_negocio FROM pedidos p
         JOIN usuarios u ON p.codigo_usuario_realizar = u.id_usuario
         JOIN negocio n ON p.codigo_negocio = n.id_negocio
         WHERE p.id_pedidos = ? AND p.codigo_negocio = ?
@@ -173,7 +166,6 @@ public class OrdenDAO {
                     negocio.setNombre(rs.getString("nombre_negocio"));
                     orden.setNegocio(negocio);
 
-                    // Cargar detalles
                     List<DetalleOrden> detalles = obtenerDetallesOrden(idOrden);
                     for (DetalleOrden detalle : detalles) {
                         orden.agregarDetalle(detalle);
@@ -185,9 +177,9 @@ public class OrdenDAO {
         }
         return null;
     }
+
     public List<DetalleOrden> obtenerDetallesOrden(int idOrden) throws SQLException {
         List<DetalleOrden> detalles = new ArrayList<>();
-
         String sql = """
             SELECT p.id_producto, p.nombre, p.descripcion, p.precio_actual, p.tipo, p.codigo_negocio,
                    pp.cantidad, pp.precio_venta
@@ -222,11 +214,9 @@ public class OrdenDAO {
         return detalles;
     }
 
-    // Actualizar orden
     public boolean actualizarOrden(Orden orden) throws SQLException {
         try {
             conexion.setAutoCommit(false);
-            System.out.println("[debbug] entro a actualizar orden para bd ");
             String sqlPedido = "UPDATE pedidos SET total = ?, estado = ?, codigo_usuario_cancela_vende = ? WHERE id_pedidos = ? AND codigo_negocio = ?";
             try (PreparedStatement stmt = conexion.prepareStatement(sqlPedido)) {
                 stmt.setDouble(1, orden.calcularTotal());
@@ -260,7 +250,6 @@ public class OrdenDAO {
         }
     }
 
-    // Cancelar orden (cambiar estado a false)
     public boolean cancelarOrden(int idOrden, int idNegocio) throws SQLException {
         String sql = "UPDATE pedidos SET estado = false WHERE id_pedidos = ? AND codigo_negocio = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -271,7 +260,6 @@ public class OrdenDAO {
         }
     }
 
-    // Listar ventas (solo pedidos completados/estado true) por negocio
     public List<Orden> listarVentasPorNegocio(int idNegocio) throws SQLException {
         String sql = """
             SELECT p.id_pedidos, p.total, p.fech_realizacion, p.codigo_usuario_realizar, p.estado,
@@ -326,261 +314,163 @@ public class OrdenDAO {
         }
     }
 
-
     public String horaPicoVentas(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
         String sql = """
-            SELECT HOUR(fech_realizacion) AS hora, COUNT(*) AS total
-            FROM pedidos
+            SELECT HOUR(fech_realizacion) AS hora, COUNT(*) AS total FROM pedidos
             WHERE fech_realizacion BETWEEN ? AND ? AND codigo_negocio = ? AND estado = true
             GROUP BY hora ORDER BY total DESC LIMIT 1
         """;
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setTimestamp(1, Timestamp.valueOf(desde));
             stmt.setTimestamp(2, Timestamp.valueOf(hasta));
-             stmt.setInt(3, idNegocio);
+            stmt.setInt(3, idNegocio);
             ResultSet rs = stmt.executeQuery();
             return rs.next() ? rs.getString("hora") + ":00 hrs" : "Sin datos";
         }
     }
 
-
     public double sumarVentas(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
-    String sql = "SELECT COALESCE(SUM(total), 0) FROM pedidos WHERE fech_realizacion BETWEEN ? AND ? AND codigo_negocio = ? AND estado = true";
-    try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-        stmt.setTimestamp(1, Timestamp.valueOf(desde));
-        stmt.setTimestamp(2, Timestamp.valueOf(hasta));
-        stmt.setInt(3, idNegocio);
-        ResultSet rs = stmt.executeQuery();
-        return rs.next() ? rs.getDouble(1) : 0.0;
+        String sql = "SELECT COALESCE(SUM(total), 0) FROM pedidos WHERE fech_realizacion BETWEEN ? AND ? AND codigo_negocio = ? AND estado = true";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(desde));
+            stmt.setTimestamp(2, Timestamp.valueOf(hasta));
+            stmt.setInt(3, idNegocio);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() ? rs.getDouble(1) : 0.0;
+        }
     }
-}
 
-public int contarOrdenes(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
-    String sql = "SELECT COUNT(*) FROM pedidos WHERE fech_realizacion BETWEEN ? AND ? AND codigo_negocio = ?";
-    try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-        stmt.setTimestamp(1, Timestamp.valueOf(desde));
-        stmt.setTimestamp(2, Timestamp.valueOf(hasta));
-        stmt.setInt(3, idNegocio);
-        ResultSet rs = stmt.executeQuery();
-        return rs.next() ? rs.getInt(1) : 0;
+    public int contarOrdenes(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM pedidos WHERE fech_realizacion BETWEEN ? AND ? AND codigo_negocio = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(desde));
+            stmt.setTimestamp(2, Timestamp.valueOf(hasta));
+            stmt.setInt(3, idNegocio);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() ? rs.getInt(1) : 0;
+        }
     }
-}
 
-public double calcularGastos(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
-    String sql = "SELECT SUM(ins.precio_compra * ins.stock)  \r\n" + //
-                "    FROM insumos_stock AS ins,  \r\n" + //
-                "    insumos AS i \r\n" + //
-                "    WHERE ins.codigo_insumo = i.id_insumos \r\n" + //
-                "    AND ins.fech_entrada \r\n" + //
-                "    BETWEEN ? AND ? \r\n" + //
-                "    AND i.codigo_negocio = ?";
-    try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-        stmt.setTimestamp(1, Timestamp.valueOf(desde));
-        stmt.setTimestamp(2, Timestamp.valueOf(hasta));
-        stmt.setInt(3, idNegocio);
-        ResultSet rs = stmt.executeQuery();
-        return rs.next() ? rs.getDouble(1) : 0.0;
+    public double calcularGastos(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
+        String sql = "SELECT SUM(ins.precio_compra * ins.stock) FROM insumos_stock AS ins,insumos AS i WHERE ins.codigo_insumo = i.id_insumos AND ins.fech_entrada BETWEEN ? AND ? AND i.codigo_negocio = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(desde));
+            stmt.setTimestamp(2, Timestamp.valueOf(hasta));
+            stmt.setInt(3, idNegocio);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() ? rs.getDouble(1) : 0.0;
+        }
     }
-}
 
-// ✅ NUEVO MÉTODO - Agregar este método que falta
-public Map<String, Double> calcularUtilidadNeta(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
-    double ventas = sumarVentas(desde, hasta, idNegocio);
-    double gastos = calcularGastos(desde, hasta, idNegocio);
-    double utilidad = ventas - gastos;
-    
-    Map<String, Double> resultado = new HashMap<>();
-    resultado.put("ventas_totales", ventas);
-    resultado.put("gastos_totales", gastos);
-    resultado.put("utilidad_neta", utilidad);
-    
-    return resultado;
-}
+    public Map<String, Double> calcularUtilidadNeta(LocalDateTime desde, LocalDateTime hasta, int idNegocio) throws SQLException {
+        double ventas = sumarVentas(desde, hasta, idNegocio);
+        double gastos = calcularGastos(desde, hasta, idNegocio);
+        double utilidad = ventas - gastos;
+        
+        Map<String, Double> resultado = new HashMap<>();
+        resultado.put("ventas_totales", ventas);
+        resultado.put("gastos_totales", gastos);
+        resultado.put("utilidad_neta", utilidad);
+        
+        return resultado;
+    }
 
-
-public void reducirInsumosPorOrden(Orden orden) throws SQLException {
-    System.out.println("[DEBUG] Iniciando reducción de insumos para orden ID: " + orden.getId());
-    System.out.println("[DEBUG] Negocio ID: " + orden.getIdNegocio());
-    
-    try {
-        for (DetalleOrden detalle : orden.getDetalles()) {
-            int idProducto = detalle.getCodigoProducto();
-            int cantidad = detalle.getCantidad();
-            
-            System.out.println("[DEBUG] Procesando producto ID: " + idProducto + ", Cantidad: " + cantidad);
-            
-            // Obtener receta del producto
-            System.out.println("[DEBUG] Obteniendo receta para producto " + idProducto);
-            Map<Insumo, Double> receta = insumoProductoDAO.obtenerRecetaProducto(
-                idProducto, 
-                orden.getIdNegocio()
-            );
-            
-            System.out.println("[DEBUG] Receta obtenida: " + receta);
-            
-            if (receta == null || receta.isEmpty()) {
-                System.err.println("[ERROR] No se encontró receta para el producto ID: " + idProducto);
-                throw new SQLException("No se encontró receta para el producto ID: " + idProducto);
-            }
-            
-            // Reducir cada insumo
-            for (Map.Entry<Insumo, Double> entrada : receta.entrySet()) {
-                Insumo insumo = entrada.getKey();
-                double cantidadUsar = entrada.getValue();
-                double cantidadReducir = cantidadUsar * cantidad;
+    public void reducirInsumosPorOrden(Orden orden) throws SQLException {
+        try {
+            for (DetalleOrden detalle : orden.getDetalles()) {
+                int idProducto = detalle.getCodigoProducto();
+                int cantidad = detalle.getCantidad();
                 
-                System.out.println("[DEBUG] Procesando insumo ID: " + insumo.getId() + 
-                                 " | Nombre: " + insumo.getNombre() + 
-                                 " | Cantidad a reducir: " + cantidadReducir);
+                Map<Insumo, Double> receta = insumoProductoDAO.obtenerRecetaProducto(
+                    idProducto, 
+                    orden.getIdNegocio()
+                );
                 
-                try {
-                    actualizarStockInsumo(insumo.getId(), -cantidadReducir);
-                    System.out.println("[DEBUG] Stock actualizado con éxito para insumo " + insumo.getId());
-                } catch (SQLException e) {
-                    System.err.println("[ERROR CRÍTICO] Fallo al actualizar insumo " + insumo.getId());
-                    System.err.println("[ERROR DETALLE] " + e.getMessage());
-                    throw e; // Relanzamos la excepción
+                if (receta == null || receta.isEmpty()) {
+                    throw new SQLException("No se encontró receta para el producto ID: " + idProducto);
+                }
+                
+                for (Map.Entry<Insumo, Double> entrada : receta.entrySet()) {
+                    Insumo insumo = entrada.getKey();
+                    double cantidadUsar = entrada.getValue();
+                    double cantidadReducir = cantidadUsar * cantidad;
+                    
+                    try {
+                        actualizarStockInsumo(insumo.getId(), -cantidadReducir);
+                    } catch (SQLException e) {
+                        throw e; 
+                    }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
-        System.out.println("[DEBUG] Reducción de insumos completada con éxito para orden " + orden.getId());
-    } catch (Exception e) {
-        System.err.println("[ERROR GLOBAL] Fallo en reducirInsumosPorOrden: " + e.getMessage());
-        e.printStackTrace();
-        throw e;
     }
-}
 
-private void actualizarStockInsumo(int idInsumo, double cantidad) throws SQLException {
-    System.out.println("[DEBUG] Actualizando stock para insumo " + idInsumo + ", Cambio: " + cantidad);
-    
-    // Verificar stock suficiente si estamos reduciendo
-    if (cantidad < 0) {
-        String sqlSelect = "SELECT stock FROM insumos_stock WHERE codigo_insumo = ?";
-        try (PreparedStatement stmt = conexion.prepareStatement(sqlSelect)) {
-            stmt.setInt(1, idInsumo);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                double stockActual = rs.getDouble("stock");
-                System.out.println("[DEBUG] Stock actual insumo " + idInsumo + ": " + stockActual);
-                
-                if (stockActual + cantidad < 0) {
-                    String errorMsg = "Stock insuficiente para insumo " + idInsumo + 
-                                     ". Stock actual: " + stockActual + 
-                                     ", Intento de reducción: " + (-cantidad);
-                    System.err.println("[ERROR] " + errorMsg);
+    private void actualizarStockInsumo(int idInsumo, double cantidad) throws SQLException {
+        if (cantidad < 0) {
+            String sqlSelect = "SELECT stock FROM insumos_stock WHERE codigo_insumo = ?";
+            try (PreparedStatement stmt = conexion.prepareStatement(sqlSelect)) {
+                stmt.setInt(1, idInsumo);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    double stockActual = rs.getDouble("stock");
+                    
+                    if (stockActual + cantidad < 0) {
+                        String errorMsg = "Stock insuficiente para insumo " + idInsumo + 
+                                         ". Stock actual: " + stockActual + 
+                                         ", Intento de reducción: " + (-cantidad);
+                        throw new SQLException(errorMsg);
+                    }
+                } else {
+                    String errorMsg = "No se encontró registro de stock para insumo: " + idInsumo;
                     throw new SQLException(errorMsg);
                 }
-            } else {
-                String errorMsg = "No se encontró registro de stock para insumo: " + idInsumo;
-                System.err.println("[ERROR] " + errorMsg);
-                throw new SQLException(errorMsg);
             }
         }
-    }
 
-    // Actualizar el stock
-    String sqlUpdate = "UPDATE insumos_stock SET stock = stock + ? WHERE codigo_insumo = ?";
-    try (PreparedStatement stmt = conexion.prepareStatement(sqlUpdate)) {
-        stmt.setDouble(1, cantidad);
-        stmt.setInt(2, idInsumo);
-        int affectedRows = stmt.executeUpdate();
-        
-        if (affectedRows == 0) {
-            String errorMsg = "No se pudo actualizar stock para insumo: " + idInsumo + 
-                            " (0 filas afectadas)";
-            System.err.println("[ERROR] " + errorMsg);
-            throw new SQLException(errorMsg);
-        }
-        
-        System.out.println("[DEBUG] Stock actualizado exitosamente para insumo " + idInsumo);
-    } catch (SQLException e) {
-        System.err.println("[ERROR SQL] Error al ejecutar update: " + e.getMessage());
-        System.err.println("[DEBUG] SQL: " + sqlUpdate);
-        System.err.println("[DEBUG] Parámetros: " + cantidad + ", " + idInsumo);
-        throw e;
-    }
-    
-    // Mostrar nuevo stock
-    try {
-        String sqlCheck = "SELECT stock FROM insumos_stock WHERE codigo_insumo = ?";
-        try (PreparedStatement stmt = conexion.prepareStatement(sqlCheck)) {
-            stmt.setInt(1, idInsumo);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                System.out.println("[DEBUG] Nuevo stock insumo " + idInsumo + ": " + rs.getDouble("stock"));
-            }
-        }
-    } catch (SQLException e) {
-        System.err.println("[DEBUG] No se pudo verificar el nuevo stock: " + e.getMessage());
-    }
-}
-
-   public void aumentarInsumosPorOrden(Orden orden) throws SQLException {
-    System.out.println("[DEBUG] Iniciando aumento de insumos para la orden ID: " + orden.getId());
-    
-    try {
-        System.out.println("[DEBUG] Número de detalles en la orden: " + orden.getDetalles().size());
-        int detalleCount = 1;
-        
-        for (DetalleOrden detalle : orden.getDetalles()) {
-            System.out.println("[DEBUG] Procesando detalle #" + detalleCount++);
-            
-            int idProducto = detalle.getCodigoProducto();
-            int cantidad = detalle.getCantidad();
-            System.out.println("[DEBUG] Producto ID: " + idProducto + ", Cantidad: " + cantidad);
-            
-            System.out.println("[DEBUG] Obteniendo receta para producto " + idProducto + " en negocio " + orden.getIdNegocio());
-            Map<Insumo, Double> receta = insumoProductoDAO.obtenerRecetaProducto(
-                idProducto, 
-                orden.getIdNegocio()
-            );
-            
-            System.out.println("[DEBUG] Receta obtenida con " + receta.size() + " insumos");
-            int insumoCount = 1;
-            
-            for (Map.Entry<Insumo, Double> entrada : receta.entrySet()) {
-                System.out.println("[DEBUG] Procesando insumo #" + insumoCount++ + " del detalle");
-                
-                Insumo insumo = entrada.getKey();
-                double cantidadUsar = entrada.getValue();
-                double cantidadAumentar = cantidadUsar * cantidad;
-                
-                System.out.println(String.format(
-                    "[DEBUG] Insumo ID: %d, Nombre: %s, Cantidad a usar por unidad: %.2f, Total a aumentar: %.2f",
-                    insumo.getId(),
-                    insumo.getNombre(),
-                    cantidadUsar,
-                    cantidadAumentar
-                ));
-                
-                System.out.println("[DEBUG] Actualizando stock del insumo " + insumo.getId());
-                actualizarStockInsumo(insumo.getId(), cantidadAumentar);
-                System.out.println("[DEBUG] Stock actualizado correctamente");
-            }
-        }
-        
-        System.out.println("[DEBUG] Proceso de aumento de insumos completado exitosamente");
-    } catch (SQLException e) {
-        System.out.println("[ERROR] SQLException en aumentarInsumosPorOrden: " + e.getMessage());
-        e.printStackTrace();
-        throw e;
-    } catch (Exception e) {
-        System.out.println("[ERROR] Error inesperado en aumentarInsumosPorOrden: " + e.getMessage());
-        e.printStackTrace();
-        throw new SQLException("Error al aumentar insumos", e);
-    }
-}
-}
-  /*  private void actualizarStockInsumo(int idInsumo, double cantidad) throws SQLException {
-        String sql = "UPDATE insumos_stock SET stock = stock + ? WHERE codigo_insumo = ?";
-        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+        String sqlUpdate = "UPDATE insumos_stock SET stock = stock + ? WHERE codigo_insumo = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sqlUpdate)) {
             stmt.setDouble(1, cantidad);
             stmt.setInt(2, idInsumo);
-            stmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                String errorMsg = "No se pudo actualizar stock para insumo: " + idInsumo + 
+                                " (0 filas afectadas)";
+                throw new SQLException(errorMsg);
+            }
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+    public void aumentarInsumosPorOrden(Orden orden) throws SQLException {
+        try {
+            for (DetalleOrden detalle : orden.getDetalles()) {
+                int idProducto = detalle.getCodigoProducto();
+                int cantidad = detalle.getCantidad();
+                
+                Map<Insumo, Double> receta = insumoProductoDAO.obtenerRecetaProducto(
+                    idProducto, 
+                    orden.getIdNegocio()
+                );
+                
+                for (Map.Entry<Insumo, Double> entrada : receta.entrySet()) {
+                    Insumo insumo = entrada.getKey();
+                    double cantidadUsar = entrada.getValue();
+                    double cantidadAumentar = cantidadUsar * cantidad;
+                    
+                    actualizarStockInsumo(insumo.getId(), cantidadAumentar);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new SQLException("Error al aumentar insumos", e);
         }
     }
 }
-*/
-
-

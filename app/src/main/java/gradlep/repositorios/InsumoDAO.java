@@ -25,7 +25,6 @@ public class InsumoDAO {
         return lista;
     }
 
-
     public Insumo buscarPorId(int id) throws SQLException {
         String sql = "SELECT * FROM insumos WHERE id_insumos = ?";
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
@@ -48,8 +47,6 @@ public class InsumoDAO {
     ) {
         
         conexion.setAutoCommit(false);
-
-        // Insertar en insumos
         stmtInsumo.setString(1, insumo.getNombre());
         stmtInsumo.setString(2, insumo.getUnidad());
         stmtInsumo.setDouble(3, insumo.getMinStock()); 
@@ -138,7 +135,6 @@ public class InsumoDAO {
         );
     }
 
-
     public List<Insumo> listarPorNegocio(int idNegocio) throws SQLException {
     List<Insumo> lista = new ArrayList<>();
     String sql = "SELECT * FROM insumos WHERE codigo_negocio = ?";
@@ -152,7 +148,6 @@ public class InsumoDAO {
     return lista;
     }
 
-
     public void editar(Insumo insumo) throws SQLException {
     String sqlInsumo = "UPDATE insumos SET nom_producto = ?, unidad_medida = ?, min_stock = ?, estado = ? WHERE id_insumos = ?";
     String sqlStock = "UPDATE insumos_stock SET stock = ?, caducidad = ?, precio_compra = ? WHERE codigo_insumo = ?";
@@ -163,7 +158,6 @@ public class InsumoDAO {
     ) {
       
         conexion.setAutoCommit(false);
-
        
         stmtInsumo.setString(1, insumo.getNombre());
         stmtInsumo.setString(2, insumo.getUnidad());
@@ -171,7 +165,6 @@ public class InsumoDAO {
         stmtInsumo.setString(4, insumo.getEstado());
         stmtInsumo.setInt(5, insumo.getId());
         stmtInsumo.executeUpdate();
-
        
         stmtStock.setInt(1, insumo.getStock());
         stmtStock.setString(2, insumo.getCaducidad());
@@ -179,19 +172,15 @@ public class InsumoDAO {
         stmtStock.setInt(4, insumo.getId());
         stmtStock.executeUpdate();
 
-       
         conexion.commit();
 
     } catch (SQLException e) {
-       
         conexion.rollback();
         throw e;
     } finally {
-        
         conexion.setAutoCommit(true);
     }
 }
-
 
 public Map<String, Object> obtenerInfoStock(int idInsumo) throws SQLException {
     String sql = "SELECT precio_compra, caducidad FROM insumos_stock WHERE codigo_insumo = ? LIMIT 1";
@@ -207,7 +196,6 @@ public Map<String, Object> obtenerInfoStock(int idInsumo) throws SQLException {
     }
     return null;
 }
-
 
 public List<Map<String, Object>> obtenerHistorialInsumo(int idInsumo, int idNegocio) throws SQLException {
     List<Map<String, Object>> historial = new ArrayList<>();

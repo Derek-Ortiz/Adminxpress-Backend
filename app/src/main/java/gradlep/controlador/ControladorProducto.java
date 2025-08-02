@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -30,8 +29,6 @@ public class ControladorProducto {
     this.productoDAO = productoDAO;
     this.insumoProductoDAO = insumoProductoDAO;
 }
-
-
 
 public void agregarProducto(Context ctx) {
     try {
@@ -52,9 +49,6 @@ public void agregarProducto(Context ctx) {
         }
 
         UploadedFile imagen = ctx.uploadedFile("imagen");
-
-        System.out.println("- Producto JSON: " + productoJson);
-        System.out.println("- Imagen recibida: " + (imagen != null ? imagen.filename() + " (" + imagen.size() + " bytes)" : "null"));
         
         if (imagen != null) {
             String carpetaImagenes = "/home/ubuntu/integrador-back2/app/src/main/java/gradlep/uploads/";
@@ -66,7 +60,6 @@ public void agregarProducto(Context ctx) {
             producto.setImagen("uploads/" + nombreArchivo);
             System.out.println("Imagen: " + producto.getImagen());
         } else {
-            System.out.println("no imgen");
             producto.setImagen(null); 
         }
 
@@ -74,7 +67,6 @@ public void agregarProducto(Context ctx) {
         ctx.status(201).json(producto);
 
     } catch (Exception e) {
-        System.err.println(" Error: " + e.getMessage());
         e.printStackTrace();
         ctx.status(500).json(Map.of(
                 "error", "Error interno del servidor",
@@ -82,9 +74,6 @@ public void agregarProducto(Context ctx) {
         ));
     }
 }
-
-
-
 
 public void actualizarProducto(Context ctx) {
     try {
@@ -103,7 +92,6 @@ public void actualizarProducto(Context ctx) {
         UploadedFile imagen = ctx.uploadedFile("imagen");
         if (imagen != null) {
     
-            System.out.println("Imagen recibida: " + imagen.filename());
             String carpetaImagenes = "/home/ubuntu/integrador-back2/app/src/main/java/gradlep/uploads/";
             Files.createDirectories(Paths.get(carpetaImagenes));
             String nombreArchivo = System.currentTimeMillis() + "_" + imagen.filename();
@@ -111,12 +99,9 @@ public void actualizarProducto(Context ctx) {
             Files.copy(imagen.content(), rutaDestino);
 
             producto.setImagen("uploads/" + nombreArchivo);
-            System.out.println("Imagen guardada: " + producto.getImagen());
         } else {
-            System.out.println("No llego imagen");
-            producto.setImagen(null); 
+            producto.setImagen(null);
         }
-
 
         productoDAO.editarProducto(producto);
         ctx.status(200).json(producto);
@@ -136,7 +121,6 @@ public void actualizarProducto(Context ctx) {
     }
 }
 
-
     public void eliminarProducto(Context ctx) {
         try {
             int id = Integer.parseInt(ctx.pathParam("id"));
@@ -151,7 +135,6 @@ public void actualizarProducto(Context ctx) {
             ));
         }
     }
-
 
     public void obtenerProductoPorId(Context ctx) {
         try {
@@ -173,12 +156,9 @@ public void actualizarProducto(Context ctx) {
         }
     }
 
-
     public void listarProductosPorNegocio(Context ctx) {
     try {
         int codigoNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
-        System.out.println("el codigo negocio es: "+ codigoNegocio);
-
         List<Producto> productos = productoDAO.listarPorNegocio(codigoNegocio);
         ctx.json(productos);
         
@@ -188,12 +168,9 @@ public void actualizarProducto(Context ctx) {
         ctx.status(500).json(Map.of("error", "Error en base de datos"));
     }
 }
-
     public void listarProductosVentas(Context ctx) {
     try {
         int codigoNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
-        System.out.println("el codigo negocio es: "+ codigoNegocio);
-        
         
         List<Producto> productos = productoDAO.listarParaVentas(codigoNegocio);
         ctx.json(productos);
@@ -209,7 +186,6 @@ public void actualizarProducto(Context ctx) {
     
         try {
             int codigoNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
-            System.out.println("el codigo de negocio es: " + codigoNegocio);
             List<Insumo> insumos = productoDAO.listarInsumosBasicos(codigoNegocio);
             ctx.json(insumos);
         } catch (NumberFormatException e) {
@@ -228,7 +204,6 @@ public void obtenerInsumosProducto(Context ctx) {
         int idProducto = Integer.parseInt(ctx.pathParam("id"));
         int codigoNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
         
-  
         Producto producto = productoDAO.buscarPorIdYNegocio(idProducto, codigoNegocio);
         if (producto == null) {
             ctx.status(403).json(Map.of("error", "Acceso denegado: producto no pertenece al negocio"));
@@ -244,7 +219,6 @@ public void obtenerInsumosProducto(Context ctx) {
         ctx.status(500).json(Map.of("error", "Error en base de datos"));
     }
 }
-
 
 public void agregarInsumoAProducto(Context ctx) {
     try {

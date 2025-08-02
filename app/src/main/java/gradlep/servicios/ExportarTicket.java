@@ -26,12 +26,10 @@ public class ExportarTicket {
     titulo.setAlignment(Element.ALIGN_CENTER);
     doc.add(titulo);
 
-
         doc.add(new Paragraph("ID Orden: " + orden.getId()));
         doc.add(new Paragraph("Fecha: " + orden.getFecha().toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
         doc.add(new Paragraph("Cajero: " + orden.getNombreCajero()));
         doc.add(new Paragraph("--------------------------------------------------"));
-
 
         PdfPTable tabla = new PdfPTable(4);
         tabla.setWidthPercentage(100);

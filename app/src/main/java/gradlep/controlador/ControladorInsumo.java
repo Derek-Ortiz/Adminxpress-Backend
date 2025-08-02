@@ -149,7 +149,6 @@ public class ControladorInsumo {
 public void registrarMovimientoStock(Context ctx) {
     try {
         
-        int idNegocio = Integer.parseInt(ctx.pathParam("id_negocio"));
         int idInsumo = Integer.parseInt(ctx.pathParam("id"));
         
         Map<String, Object> movimiento = ctx.bodyAsClass(Map.class);

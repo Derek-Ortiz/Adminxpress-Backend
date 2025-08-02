@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class ControladorReportes {
     private final OrdenDAO ordenDAO;
     private final ProductoDAO productoDAO;
@@ -208,7 +207,6 @@ public void obtenerGastos(Context ctx) {
         manejarErrorSQL(ctx, "Error al calcular utilidad neta", e);
     }
 }
-
 
     private LocalDateTime parseDateTime(String fecha) throws DateTimeParseException {
         if (fecha == null || fecha.isEmpty()) {

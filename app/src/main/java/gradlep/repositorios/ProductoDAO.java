@@ -29,18 +29,13 @@ public class ProductoDAO {
             stmt.setInt(6, producto.getCodigoNegocio());
             stmt.setString(7, producto.getImagen());
 
-            int filasAfectadas = stmt.executeUpdate();
-            System.out.println("Filas insertadas: " + filasAfectadas);
-
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     producto.setId(generatedKeys.getInt(1));
-                    System.out.println("ID: " + producto.getId());
                 }
             }
         }
     } catch (SQLException e) {
-        System.err.println("Error SQL: " + e.getMessage());
         conexion.rollback();
         throw e;
     } finally {
@@ -96,7 +91,6 @@ public class ProductoDAO {
     return productos;
 }
 
-
     public List<Producto> listarParaVentas(int codigoNegocio) throws SQLException {
     String sql = "SELECT id_producto, nombre, precio_actual, imagen, tipo, descripcion, codigo_negocio FROM productos WHERE codigo_negocio = ?";
     List<Producto> productos = new ArrayList<>();
@@ -148,7 +142,6 @@ public class ProductoDAO {
     }
 }
 
-
 public List<Insumo> listarInsumosBasicos(int idNegocio) throws SQLException {
     List<Insumo> lista = new ArrayList<>();
     String sql = "SELECT id_insumos, nom_producto, unidad_medida FROM insumos WHERE codigo_negocio = ?";
@@ -168,7 +161,6 @@ public List<Insumo> listarInsumosBasicos(int idNegocio) throws SQLException {
     return lista;
 }
 
-   
     public List<Producto> obtenerTopProductos(LocalDateTime desde, LocalDateTime hasta, boolean masVendidos, int idNegocio) throws SQLException {
     List<Producto> productos = new ArrayList<>();
     String orden = masVendidos ? "DESC" : "ASC";
@@ -203,7 +195,5 @@ public List<Insumo> listarInsumosBasicos(int idNegocio) throws SQLException {
         }
     }
     return productos;
-}
-
-
+ }
 }
